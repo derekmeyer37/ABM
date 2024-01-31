@@ -1,4 +1,7 @@
 # ABM_v4 implements the model capability for social distancing
+
+
+# look at changing maxmix to contact rate
 # -------------------------------- Functions -----------------------------------
 # population size, initial_exposed, initial_infected, vaccine, social distancing
 AgentGen1 <- function(nPop, E0, I0, vaccine = NA, social_distancing = NA){
@@ -148,9 +151,9 @@ par1 <- data.frame(MaxMix = 7,  # Maximum number each agent can meet in a day
                    infectious_period = 9) # Time which an agent is infectious
 
 vaccine_tool <- data.frame(E2I_reduction = 0.05,
-                           prevalence = 0.0)
+                           prevalence = 0.5)
 social_distancing_tool <- data.frame(S2E_reduction = 0.05,
-                           prevalence = 0.0)
+                           prevalence = 0.5)
 
 # Running the Model
 Agent1 <- AgentGen1(nPop = 1000, E0 = 10, I0 = 5, vaccine = vaccine_tool,
@@ -178,3 +181,4 @@ legend("right", legend = c("Susceptible", "Exposed", "Infected", "Recovered",
                                                    "green", "black"), lty = 1)
 
 
+model
