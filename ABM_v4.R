@@ -55,6 +55,17 @@ ABM1 <- function(Agent1, par1, nTime1, vaccine = NA, social_distancing = NA) {
       Mix1 <- Agent1$Mixing[i]
       # How many agents will they meet (Each will meet up to MaxMix other agents
       # per day)
+
+      # [2024-02-07] George:
+      # For identifying how many agents they could meet, you could leverage the 
+      # binomial distribution. If you want them to meet on average 7 other agents,
+      # then, you could do the following:
+      #
+      # Meet1 <- rbinom(1, size = nPop, prob = par1$MaxMix/nPop)
+      #
+      # That will yield on average MaxMix agents. This is only a recommendation.
+      # You can keep the current approach if you want.
+
       Meet1 <- round(Mix1*par1$MaxMix,0) + 1
       # Grab the agents they will meet: sampling susceptible or exposed
       # individuals of size meet1, using mixing probability
@@ -66,6 +77,10 @@ ABM1 <- function(Agent1, par1, nTime1, vaccine = NA, social_distancing = NA) {
       for(j in 1:length(Meet2)) {
         # Grab who they will meet
         Meet1a <- Agent1[Meet2[j], ]
+        
+        # [2024-02-07] George:
+        # Shouldn't this be == "I"? Infected agents are the ones who 
+        # transmit the disease, not exposed.
         if(Meet1a$State == "E"){
           Urand1 <- runif(1)
           # Apply social distancing if the agent practices it
