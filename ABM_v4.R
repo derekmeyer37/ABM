@@ -55,6 +55,17 @@ ABM1 <- function(Agent1, par1, nTime1, vaccine = NA, social_distancing = NA) {
       Mix1 <- Agent1$Mixing[i]
       # How many agents will they meet (Each will meet up to MaxMix other agents
       # per day)
+
+      # [2024-02-07] George:
+      # For identifying how many agents they could meet, you could leverage the 
+      # binomial distribution. If you want them to meet on average 7 other agents,
+      # then, you could do the following:
+      #
+      # Meet1 <- rbinom(1, size = nPop, prob = par1$MaxMix/nPop)
+      #
+      # That will yield on average MaxMix agents. This is only a recommendation.
+      # You can keep the current approach if you want.
+
       Meet1 <- round(Mix1*par1$MaxMix,0) + 1
       # Grab the agents they will meet: sampling susceptible or exposed
       # individuals of size meet1, using mixing probability
@@ -66,17 +77,31 @@ ABM1 <- function(Agent1, par1, nTime1, vaccine = NA, social_distancing = NA) {
       for(j in 1:length(Meet2)) {
         # Grab who they will meet
         Meet1a <- Agent1[Meet2[j], ]
+        
+        # [2024-02-07] George:
+        # Shouldn't this be == "I"? Infected agents are the ones who 
+        # transmit the disease, not exposed.
         if(Meet1a$State == "E"){
-          Urand1 <- runif(1,0,1)
+          Urand1 <- runif(1)
           # Apply social distancing if the agent practices it
           if (Agent1$Social_Distancing[i] == 1) {
             if (Urand1 < par1$S2E - social_distancing$S2E_reduction) {
               Agent1$State[i] <- "E"
+
+              # [2024-02-07] George:
+              # After becoming exposed, there's no need of continue checking
+              break
+
             }
           } else {
               # If not practicing social distancing, apply regular exposure
               if (Urand1 < par1$S2E) {
                 Agent1$State[i] <- "E"
+
+                # [2024-02-07] George:
+                # After becoming exposed, there's no need of continue checking
+                break
+
               }
           }
         }
@@ -95,7 +120,7 @@ ABM1 <- function(Agent1, par1, nTime1, vaccine = NA, social_distancing = NA) {
                          Agent1$TimeE > par1$incubation_period]
     for(i in StateE3){
       # Randomly assign whether they get sick or not based on vaccination status
-      Urand1 <- runif(1,0,1)
+      Urand1 <- runif(1)
       if (Agent1$Vaccination[i] == 1) {
           if (Urand1 < par1$E2I - vaccine$E2I_reduction) {
             Agent1$State[i] <- "I"
@@ -110,6 +135,16 @@ ABM1 <- function(Agent1, par1, nTime1, vaccine = NA, social_distancing = NA) {
     # Update how long the agents have been sick
     StateI1 <- (1:nPop)[Agent1$State == "I"]
     Agent1$TimeI[StateI1] = Agent1$TimeI[StateI1] + 1
+
+    # [2024-02-07] George
+    # Having a hard-stop at 14 days of the infection is OK, but I would also
+    # randomize this. What you can do is have a prob. of recovery with mean
+    # 14 days. All you need is to do the same randomization you have done for
+    # other things. e.g.
+    #
+    # Agent1$State[StateI2] <- ifelse(runif(length(StateI2),0,1) < 1/14, "R", "I")
+    #
+    # But is all up to you.
     StateI2 <- (1:nPop)[Agent1$State == "I" & Agent1$TimeI > 14]
     Agent1$State[StateI2] <- "R"
     # Grab agents who have been infected for 10 days or less to see if they die
