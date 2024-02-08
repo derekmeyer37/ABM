@@ -166,7 +166,7 @@ smooth_lines <- function(data, window_size) {
 # Model Parameters
 set.seed(123)
 parms <- data.frame(max_mix = 7,  # Maximum number each agent can meet in a day
-                   S2E = 0.25,  # prob_exposure
+                   S2E = 0.2,  # prob_exposure
                    E2I = 0.15,  # prob_infection
                    I2D = 0.01,  # prob_death
                    incubation_period = 6, # Time between when an agent is
@@ -174,7 +174,7 @@ parms <- data.frame(max_mix = 7,  # Maximum number each agent can meet in a day
                                           # infectious agent
                    infectious_period = 9) # Time which an agent is infectious
 
-vaccine_tool <- data.frame(E2I_reduction = 0.05,
+vaccine_tool <- data.frame(E2I_reduction = 0.07,
                            prevalence = 0.0)
 social_distancing_tool <- data.frame(S2E_reduction = 0.05,
                            prevalence = 0.0)
