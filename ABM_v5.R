@@ -56,18 +56,11 @@ abm <- function(agents, parms, n_days, vaccine = NA, social_distancing = NA) {
       # How many agents will they meet (Each will meet up to max_mix other agents
       # per day)
 
-      # [2024-02-07] George:
-      # For identifying how many agents they could meet, you could leverage the 
-      # binomial distribution. If you want them to meet on average 7 other agents,
-      # then, you could do the following:
-      #
-      # meet1 <- rbinom(1, size = n_pop, prob = parms$max_mix/n_pop)
-      #
-      # That will yield on average max_mix agents. This is only a recommendation.
-      # You can keep the current approach if you want.
+      
+      # Identifying how many agents they could meet (on average, 7 agents)
+      meet1 <- rbinom(1, size = n_pop, prob = parms$max_mix/n_pop) + 1
 
-      meet1 <- round(mix*parms$max_mix,0) + 1
-      # Grab the agents they will meet: sampling susceptible or exposed
+      # Grab the agents they will meet: sampling susceptible or infected
       # individuals of size meet1, using mixing probability
       # Replace = TRUE means they could meet the same agent over and over
       meet2 <- sample(stateSI, meet1, replace = TRUE,
@@ -77,7 +70,7 @@ abm <- function(agents, parms, n_days, vaccine = NA, social_distancing = NA) {
       for(j in 1:length(meet2)) {
         # Grab who they will meet
         meet1a <- agents[meet2[j], ]
-        
+        # If a susceptible agent meets an infected agent, chance to be exposed
         if(meet1a$state == "I"){
           Urand1 <- runif(1)
           # Apply social distancing if the agent practices it
@@ -126,15 +119,14 @@ abm <- function(agents, parms, n_days, vaccine = NA, social_distancing = NA) {
     agents$timeI[stateI1] = agents$timeI[stateI1] + 1
 
     # [2024-02-07] George
-    # Having a hard-stop at 14 days of the infection is OK, but I would also
+    # Having a hard-stop at 12 days of the infection is OK, but I would also
     # randomize this. What you can do is have a prob. of recovery with mean
-    # 14 days. All you need is to do the same randomization you have done for
+    # 12 days. All you need is to do the same randomization you have done for
     # other things. e.g.
     #
     # agents$state[stateI2] <- ifelse(runif(length(stateI2),0,1) < 1/14, "R", "I")
-    #
-    # But is all up to you.
-    stateI2 <- (1:n_pop)[agents$state == "I" & agents$timeI > 14]
+
+    stateI2 <- (1:n_pop)[agents$state == "I" & agents$timeI > 12]
     agents$state[stateI2] <- "R"
     # Grab agents who have been infected for 10 days or less to see if they die
     stateI3 <- (1:n_pop)[agents$state == "I" &
